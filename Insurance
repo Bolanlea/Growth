@@ -1,3 +1,4 @@
+TO CREATE A NEW TABLE
 CREATE TABLE policy(
     policy_id INTEGER AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER,
@@ -5,36 +6,47 @@ CREATE TABLE policy(
     policy_start_date DATE,
     transaction_value DECIMAL(14,2));
     
+TO INSERT DATA INTO THE NEW TABLE
 INSERT INTO policy (policy_id, user_id, product_id, policy_start_date, transaction_value) VALUES
 (12345678, 00001234, 000000123, '2019-08-01',1200.00),
 (12345679, 00001235, 000000123, '2019-08-06', 1100.00),
 (12345680, 00001235, 000000124, '2019-08-08', 100.50),
 (12345681 ,00001236	, 000000123, '2019-08-09', 1537.00);
 
+TO CREATE A NEW TABLE
 CREATE TABLE product(
     product_id INTEGER AUTO_INCREMENT PRIMARY KEY,
     product_type VARCHAR(100),
     product_name VARCHAR(100),
     insurer VARCHAR(100));
-    
+ 
+TO INSERT DATA INTO THE NEW TABLE
 INSERT INTO product (product_id, product_type, product_name, insurer) VALUES
 (000000123, 'taxi', '30_days_taxi', 'RSA'),
 (000000124, 'ancillary', 'breakdown_cover', 'RSA'),
 (000000125, 'taxi', '90_days_taxi', 'Bupa'),
 (000000126, 'delivery', '30_days_food_delivery', 'AXA');
 
+TO IDENTIFY THE TOTAL NUMBER OF POLICIES IN THE POLICY TABLE
 SELECT COUNT(*) FROM policy
+
+TO FIND THE EARLIEST POLICY START DATE IN THE POLICY TABLE 
 SELECT * FROM policy ORDER BY policy_start_date ASC LIMIT 1
 
+TO CALCULATES THE TOTAL GWP (I.E. TRANSACTION_VALUE) OF ALL HISTORIC POLICIES TO DATE 
 SELECT SUM(transaction_value) FROM policy;
+
+TO CALCULATES THE AVERAGE GWP (TRANSACTION VALUE) FOR EACH INSURER IN THE LAST 7 DAYS 
 SELECT AVG(transaction_value), insurer FROM product INNER JOIN policy ON policy.product_id = product.product_id WHERE policy_start_date >= (SELECT DATE_SUB('2019-08-01',INTERVAL 7 DAY)) GROUP BY insurer;
 
+TO RETURN A LIST OF ALL PRODUCT_NAMES IN THE DATABASE, ALONG WITH THE NUMBER OF POLICIES STARTED YESTERDAY
 SELECT * FROM product LEFT JOIN policy ON policy.product_id = product.product_id WHERE policy_start_date = (SELECT DATE_SUB('2019-08-09',INTERVAL 1 DAY))
 
 SELECT COUNT(*) FROM policy WHERE MONTH(policy_start_date) = 8 AND YEAR(policy_start_date) = 2019 AND
 user_id NOT IN
 (SELECT user_id FROM policy WHERE policy_start_date < '2019-08-01'); 
 
+THAT RETURNS THE TOTAL NUMBER OF CUSTOMERS WHO STARTED THEIR FIRST EVER POLICY IN AUGUST 2019 
 SELECT policy_start_date, product_type, COUNT(*)
 FROM product LEFT JOIN policy ON policy.product_id = product.product_id
 WHERE product_type IN ('taxi','delivery')
